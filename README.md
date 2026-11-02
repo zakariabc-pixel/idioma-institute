@@ -15,11 +15,10 @@ Stack : Next.js 15 (App Router) · Supabase (Postgres, Auth, Storage) · Tailwin
 ## Démarrer
 
 1. Créer un projet sur [supabase.com](https://supabase.com).
-2. Dans l'éditeur SQL de Supabase, exécuter `supabase/migrations/0001_init.sql` puis `supabase/seed.sql`.
+2. Dans l'éditeur SQL de Supabase, exécuter les fichiers de `supabase/migrations/` dans l'ordre, puis `supabase/seed.sql`.
 3. Copier `.env.example` en `.env.local` et remplir les clés (Project settings → API).
 4. `npm install` puis `npm run dev`, ouvrir http://localhost:3000.
-5. Créer le premier compte admin : Authentication → Users → Add user, puis dans l'éditeur SQL :
-   `update profiles set role = 'admin' where id = '<id de l'utilisateur>';`
+5. Créer le premier compte : Authentication → Users → Add user. Le tout premier compte créé devient automatiquement administrateur.
 
 ## Prochains lots
 
