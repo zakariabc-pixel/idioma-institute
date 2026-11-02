@@ -1,44 +1,35 @@
 "use server";
 
-import { createSupabaseService } from "@/lib/supabase/server";
+import { createSupabaseServer } from "@/lib/supabase/server";
 
 export type LeadState = { ok: boolean; error?: boolean } | null;
 
-const LANGS = ["fr", "en", "es"];
-const FORMATS = ["groupe", "individuel"];
-const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
-
-function field(form: FormData, key: string, max = 200) {
+function field(form: FormData, key: string) {
   const v = form.get(key);
-  return typeof v === "string" ? v.trim().slice(0, max) : "";
+  return typeof v === "string" ? v.trim() : "";
 }
 
-/** Formulaire public : crée un prospect dans le CRM (étape "nouveau"). */
+/**
+ * Formulaire public : crée un prospect dans le CRM via la fonction SQL `submit_lead`
+ * (validation côté base, aucune clé serveur nécessaire).
+ */
 export async function createLead(_prev: LeadState, form: FormData): Promise<LeadState> {
   const full_name = field(form, "full_name");
-  const email = field(form, "email");
-  const phone = field(form, "phone", 40);
-  if (!full_name || (!email && !phone)) return { ok: false, error: true };
+  if (!full_name || (!field(form, "email") && !field(form, "phone"))) return { ok: false, error: true };
 
-  const language = field(form, "language");
-  const format = field(form, "format");
-  const level = field(form, "test_level");
   const score = Number.parseInt(field(form, "test_score"), 10);
-
-  const { error } = await createSupabaseService()
-    .from("contacts")
-    .insert({
-      full_name,
-      email: email || null,
-      phone: phone || null,
-      message: field(form, "message", 2000) || null,
-      language_interest: LANGS.includes(language) ? language : null,
-      format_interest: FORMATS.includes(format) ? format : null,
-      test_level: LEVELS.includes(level) ? level : null,
-      test_score: Number.isFinite(score) ? score : null,
-      pipeline: LEVELS.includes(level) ? "test_niveau" : "nouveau",
-      source: field(form, "source", 40) || "site",
-    });
+  const supabase = await createSupabaseServer();
+  const { error } = await supabase.rpc("submit_lead", {
+    p_full_name: full_name,
+    p_email: field(form, "email") || null,
+    p_phone: field(form, "phone") || null,
+    p_message: field(form, "message") || null,
+    p_language: field(form, "language") || null,
+    p_format: field(form, "format") || null,
+    p_test_level: field(form, "test_level") || null,
+    p_test_score: Number.isFinite(score) ? score : null,
+    p_source: field(form, "source") || "site",
+  });
 
   if (error) {
     console.error("createLead", error);
