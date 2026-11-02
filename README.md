@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Idioma Institute
 
-## Getting Started
+Site vitrine + application de gestion de l'école (CRM prospects → clients → étudiants → alumni, cours live, programme, paiements par virement/versement).
 
-First, run the development server:
+Stack : Next.js 15 (App Router) · Supabase (Postgres, Auth, Storage) · Tailwind CSS.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Ce qui est en place (lot 1)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Site vitrine** en français, anglais et espagnol : `/fr`, `/en`, `/es`
+- **Formulaire d'inscription** : chaque envoi crée un prospect dans le CRM
+- **Test de niveau** en ligne (10 questions par langue, résultat A1 → C1), qui crée aussi un prospect
+- **Back-office** `/admin` : connexion, pipeline des prospects (Nouveau → Contacté → Test de niveau → Cours d'essai → Proposition → Gagné / Perdu), notes, lien WhatsApp
+- **Base de données complète** (`supabase/migrations/0001_init.sql`) : contacts, programme (langue → niveau → module → leçon), classes en groupe ou individuelles, séances live, inscriptions, paiements avec reçu, présence, certificats, rôles et règles de sécurité (RLS)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Démarrer
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Créer un projet sur [supabase.com](https://supabase.com).
+2. Dans l'éditeur SQL de Supabase, exécuter `supabase/migrations/0001_init.sql` puis `supabase/seed.sql`.
+3. Copier `.env.example` en `.env.local` et remplir les clés (Project settings → API).
+4. `npm install` puis `npm run dev`, ouvrir http://localhost:3000.
+5. Créer le premier compte admin : Authentication → Users → Add user, puis dans l'éditeur SQL :
+   `update profiles set role = 'admin' where id = '<id de l'utilisateur>';`
 
-## Learn More
+## Prochains lots
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Conversion prospect → étudiant (création du compte, inscription à une classe)
+- Paiement : dépôt du reçu par l'étudiant, validation par l'admin
+- Espace étudiant et espace professeur, salle de cours live intégrée (LiveKit ou Daily)
+- Éditeur du programme, présence, certificats PDF
